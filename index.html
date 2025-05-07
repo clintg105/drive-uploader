@@ -1,0 +1,33 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <script src='https://apis.google.com/js/api.js'></script>
+  <script src='https://apis.google.com/js/platform.js'></script>
+  <script>
+    const CLIENT_ID     = 'YOUR_OAUTH_CLIENT_ID',
+          DEVELOPER_KEY = 'YOUR_API_KEY',
+          FOLDER_ID     = '1OBHFIktH_mzl88lUGZkzn5Q55y5BKVuf';
+    function onApiLoad() {
+      gapi.load('auth2', () =>
+        gapi.auth2.init({ client_id: CLIENT_ID })
+            .then(initPicker)
+      );
+      gapi.load('picker', initPicker);
+    }
+    function initPicker() {
+      const auth = gapi.auth2.getAuthInstance();
+      if (!auth.isSignedIn.get()) return auth.signIn().then(initPicker);
+      const token = auth.currentUser.get().getAuthResponse().access_token;
+      new google.picker.PickerBuilder()
+        .addView(new google.picker.DocsUploadView().setParent(FOLDER_ID))
+        .setOAuthToken(token)
+        .setDeveloperKey(DEVELOPER_KEY)
+        .setCallback(d => { if (d.action === google.picker.Action.PICKED) alert('Upload complete!'); })
+        .build()
+        .setVisible(true);
+    }
+  </script>
+</head>
+<body onload="onApiLoad()"></body>
+</html>
